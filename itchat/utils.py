@@ -1,4 +1,4 @@
-import re, os, sys, subprocess, copy, traceback, logging
+import re, os, sys, subprocess, copy, traceback, logging, datetime
 
 try:
     from HTMLParser import HTMLParser
@@ -152,3 +152,10 @@ def update_info_dict(oldInfoDict, newInfoDict):
             pass # these values will be updated somewhere else
         elif oldInfoDict.get(k) is None or v not in (None, '', '0', 0):
             oldInfoDict[k] = v
+
+def is_holiday(datetime):
+    return datetime.isoweekday() in (6, 7)
+
+def parse_hour(hour):
+    now_d = datetime.datetime.now()
+    return datetime.datetime(now_d.year, now_d.month, now_d.day, hour)

@@ -27,6 +27,7 @@ class Core(object):
         self.s = requests.Session()
         self.uuid = None
         self.functionDict = {'FriendChat': {}, 'GroupChat': {}, 'MpChat': {}}
+        self.timeDict = {}
         self.useHotReload, self.hotReloadDir = False, 'itchat.pkl'
         self.receivingRetryCount = 5
     def login(self, enableCmdQR=False, picDir=None, qrCallback=None,
@@ -440,6 +441,10 @@ class Core(object):
             it is defined in components/register.py
         '''
         raise NotImplementedError()
+    def time_msg_register(self, second, username=None):
+        raise NotImplementedError()
+    def send_time_msg(self, start_time):
+        raise NotImplementedError()
     def search_friends(self, name=None, userName=None, remarkName=None, nickName=None,
             wechatAccount=None):
         return self.storageClass.search_friends(name, userName, remarkName,
@@ -448,5 +453,6 @@ class Core(object):
         return self.storageClass.search_chatrooms(name, userName)
     def search_mps(self, name=None, userName=None):
         return self.storageClass.search_mps(name, userName)
+
 
 load_components(Core)

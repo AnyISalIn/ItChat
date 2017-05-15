@@ -1,11 +1,11 @@
-import logging, traceback, sys, threading
+import logging, traceback, sys, threading, time, datetime
 try:
     import Queue
 except ImportError:
     import queue as Queue
 
 from ..log import set_logging
-from ..utils import test_connect
+from ..utils import test_connect, parse_hour, is_holiday
 from ..storage import templates
 
 logger = logging.getLogger('itchat')
@@ -13,6 +13,8 @@ logger = logging.getLogger('itchat')
 def load_register(core):
     core.auto_login       = auto_login
     core.configured_reply = configured_reply
+    core.time_msg_register = time_msg_register
+    core.send_time_msg = send_time_msg
     core.msg_register     = msg_register
     core.run              = run
 
@@ -63,6 +65,28 @@ def configured_reply(self):
             except:
                 logger.warning(traceback.format_exc())
 
+def send_time_msg(self, start_time):
+    for func, info in self.timeDict.items():
+        second, hour, ok, usernames = info['second'], info['time']['hour'], info['time']['ok'], info['to_usernames']
+        try:
+            if second:
+                jtotal_time = time.time() - start_time
+                if total_time > info['second']:
+                    func()
+            elif hour:
+                now_d = datetime.datetime.now()
+                if now_d > hour and int((now_d - hour).total_seconds()) < 600 and not ok:
+                    r = func()
+                    for user in usernames:
+                        self.send(r, user)
+                    info['time']['ok'] = True
+                elif now_d > hour and int((now_d - hour).total_seconds()) > 600 and ok:
+                    info['time']['ok'] = False
+        except:
+            logger.warning(traceback.format_exc())
+
+
+
 def msg_register(self, msgType, isFriendChat=False, isGroupChat=False, isMpChat=False):
     ''' a decorator constructor
         return a specific decorator based on information given '''
@@ -81,7 +105,17 @@ def msg_register(self, msgType, isFriendChat=False, isGroupChat=False, isMpChat=
         return fn
     return _msg_register
 
+def time_msg_register(self, second=None, hour=None, usernames=None):
+    usernames = usernames or []
+    hour = None if not hour else parse_hour(hour)
+    second = None if hour else second
+    def wrapper(fn):
+        self.timeDict[fn] = {'second': second, 'time': {'hour': hour, 'ok': False}, 'to_usernames': usernames}
+        return fn
+    return wrapper
+
 def run(self, debug=False, blockThread=True):
+    start_time = time.time()
     logger.info('Start auto replying.')
     if debug:
         set_logging(loggingLevel=logging.DEBUG)
@@ -89,6 +123,7 @@ def run(self, debug=False, blockThread=True):
         try:
             while self.alive:
                 self.configured_reply()
+                self.send_time_msg(start_time)
         except KeyboardInterrupt:
             if self.useHotReload:
                 self.dump_login_status()
