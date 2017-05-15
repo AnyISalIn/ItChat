@@ -66,19 +66,22 @@ def configured_reply(self):
                 logger.warning(traceback.format_exc())
 
 def send_time_msg(self, start_time):
+    def send_to_usernames(func, usernames):
+        r = func()
+        for user in usernames:
+            self.send(r, user)
+
     for func, info in self.timeDict.items():
         second, date, ok, usernames = info['second'], info['time']['date'], info['time']['ok'], info['to_usernames']
         try:
             if second:
-                jtotal_time = time.time() - start_time
+                total_time = time.time() - start_time
                 if total_time > info['second']:
-                    func()
+                    send_to_usernames(func, usernames)
             elif date:
                 now_d = datetime.datetime.now()
                 if now_d > date and int((now_d - date).total_seconds()) < 600 and not ok:
-                    r = func()
-                    for user in usernames:
-                        self.send(r, user)
+                    send_to_usernames(func, usernames)
                     info['time']['ok'] = True
                 elif now_d > date and int((now_d - date).total_seconds()) > 600 and ok:
                     info['time']['ok'] = False
