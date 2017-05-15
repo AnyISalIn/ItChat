@@ -5,7 +5,7 @@ except ImportError:
     import queue as Queue
 
 from ..log import set_logging
-from ..utils import test_connect, parse_hour, is_holiday
+from ..utils import test_connect, parse_date, is_holiday
 from ..storage import templates
 
 logger = logging.getLogger('itchat')
@@ -67,20 +67,20 @@ def configured_reply(self):
 
 def send_time_msg(self, start_time):
     for func, info in self.timeDict.items():
-        second, hour, ok, usernames = info['second'], info['time']['hour'], info['time']['ok'], info['to_usernames']
+        second, date, ok, usernames = info['second'], info['time']['date'], info['time']['ok'], info['to_usernames']
         try:
             if second:
                 jtotal_time = time.time() - start_time
                 if total_time > info['second']:
                     func()
-            elif hour:
+            elif date:
                 now_d = datetime.datetime.now()
-                if now_d > hour and int((now_d - hour).total_seconds()) < 600 and not ok:
+                if now_d > date and int((now_d - date).total_seconds()) < 600 and not ok:
                     r = func()
                     for user in usernames:
                         self.send(r, user)
                     info['time']['ok'] = True
-                elif now_d > hour and int((now_d - hour).total_seconds()) > 600 and ok:
+                elif now_d > date and int((now_d - date).total_seconds()) > 600 and ok:
                     info['time']['ok'] = False
         except:
             logger.warning(traceback.format_exc())
@@ -105,12 +105,12 @@ def msg_register(self, msgType, isFriendChat=False, isGroupChat=False, isMpChat=
         return fn
     return _msg_register
 
-def time_msg_register(self, second=None, hour=None, usernames=None):
+def time_msg_register(self, second=None, hour=None, min=None, usernames=None):
     usernames = usernames or []
-    hour = None if not hour else parse_hour(hour)
+    date = None if not hour or not min else parse_date(hour, min)
     second = None if hour else second
     def wrapper(fn):
-        self.timeDict[fn] = {'second': second, 'time': {'hour': hour, 'ok': False}, 'to_usernames': usernames}
+        self.timeDict[fn] = {'second': second, 'time': {'date': date, 'ok': False}, 'to_usernames': usernames}
         return fn
     return wrapper
 

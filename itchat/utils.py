@@ -23,7 +23,7 @@ else:
     BLOCK = b
 friendInfoTemplate = {}
 for k in ('UserName', 'City', 'DisplayName', 'PYQuanPin', 'RemarkPYInitial', 'Province',
-        'KeyWord', 'RemarkName', 'PYInitial', 'EncryChatRoomId', 'Alias', 'Signature', 
+        'KeyWord', 'RemarkName', 'PYInitial', 'EncryChatRoomId', 'Alias', 'Signature',
         'NickName', 'RemarkPYQuanPin', 'HeadImgUrl'):
     friendInfoTemplate[k] = ''
 for k in ('UniFriend', 'Sex', 'AppAccountFlag', 'VerifyFlag', 'ChatRoomId', 'HideInputBarFlag',
@@ -156,6 +156,6 @@ def update_info_dict(oldInfoDict, newInfoDict):
 def is_holiday(datetime):
     return datetime.isoweekday() in (6, 7)
 
-def parse_hour(hour):
+def parse_date(hour, min):
     now_d = datetime.datetime.now()
-    return datetime.datetime(now_d.year, now_d.month, now_d.day, hour)
+    return datetime.datetime(now_d.year, now_d.month, now_d.day, hour, min)
