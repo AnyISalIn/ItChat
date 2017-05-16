@@ -68,6 +68,8 @@ def configured_reply(self):
 def send_time_msg(self, start_time):
     def send_to_usernames(func, usernames):
         r = func()
+        if not r:
+            return
         for user in usernames:
             self.send(r, user)
 
