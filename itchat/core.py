@@ -28,6 +28,7 @@ class Core(object):
         self.uuid = None
         self.functionDict = {'FriendChat': {}, 'GroupChat': {}, 'MpChat': {}}
         self.timeDict = {}
+        self.start_time = None
         self.useHotReload, self.hotReloadDir = False, 'itchat.pkl'
         self.receivingRetryCount = 5
     def login(self, enableCmdQR=False, picDir=None, qrCallback=None,

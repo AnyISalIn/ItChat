@@ -65,7 +65,7 @@ def configured_reply(self):
             except:
                 logger.warning(traceback.format_exc())
 
-def send_time_msg(self, start_time):
+def send_time_msg(self):
     def send_to_usernames(func, usernames):
         r = func()
         if not r:
@@ -77,9 +77,10 @@ def send_time_msg(self, start_time):
         second, date, ok, usernames = info['second'], info['time']['date'], info['time']['ok'], info['to_usernames']
         try:
             if second:
-                total_time = time.time() - start_time
+                total_time = time.time() - self.start_time
                 if total_time > info['second']:
                     send_to_usernames(func, usernames)
+                    self.start_time = time.time()
             elif date:
                 now_d = datetime.datetime.now()
                 if now_d > date and int((now_d - date).total_seconds()) < 600 and not ok:
@@ -120,7 +121,7 @@ def time_msg_register(self, second=None, hour=None, min=None, usernames=None):
     return wrapper
 
 def run(self, debug=False, blockThread=True):
-    start_time = time.time()
+    self.start_time = time.time()
     logger.info('Start auto replying.')
     if debug:
         set_logging(loggingLevel=logging.DEBUG)
@@ -128,7 +129,7 @@ def run(self, debug=False, blockThread=True):
         try:
             while self.alive:
                 self.configured_reply()
-                self.send_time_msg(start_time)
+                self.send_time_msg()
         except KeyboardInterrupt:
             if self.useHotReload:
                 self.dump_login_status()
