@@ -78,11 +78,12 @@ def send_time_msg(self):
         try:
             if second:
                 total_time = time.time() - self.start_time
-                if total_time > info['second']:
+                if total_time > second:
                     send_to_usernames(func, usernames)
                     self.start_time = time.time()
             elif date:
                 now_d = datetime.datetime.now()
+                date = parse_date(**date)
                 if now_d > date and int((now_d - date).total_seconds()) < 600 and not ok:
                     send_to_usernames(func, usernames)
                     info['time']['ok'] = True
@@ -113,10 +114,10 @@ def msg_register(self, msgType, isFriendChat=False, isGroupChat=False, isMpChat=
 
 def time_msg_register(self, second=None, hour=None, min=None, usernames=None):
     usernames = usernames or []
-    date = None if not hour or not min else parse_date(hour, min)
     second = None if hour else second
+    min = min or 00
     def wrapper(fn):
-        self.timeDict[fn] = {'second': second, 'time': {'date': date, 'ok': False}, 'to_usernames': usernames}
+        self.timeDict[fn] = {'second': second, 'time': {'date': {'hour': hour, 'min': min}, 'ok': False}, 'to_usernames': usernames}
         return fn
     return wrapper
 
